@@ -1,4 +1,4 @@
-torch~=1.13
+torch
 torchvision
 opencv-python
 decord
@@ -10,6 +10,7 @@ timm
 einops
 wandb
 scikit-video
-thop==0.0.31-2005241907
+thop
 onnx
 ptflops
+pyiqa
