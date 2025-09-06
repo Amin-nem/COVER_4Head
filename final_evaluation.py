@@ -121,16 +121,24 @@ if __name__ == '__main__':
     
     df_test = df_all[df_all['flickr_id'].isin(test_ids)].reset_index(drop=True)
     
-    # Use demo videos if available, otherwise use the flickr_ids
-    demo_videos = [f for f in os.listdir(args.videos_dir) if f.endswith('.mp4')]
-    if demo_videos:
-        files = demo_videos[:args.max_videos]
-        mos = [4.0] * len(files)  # Default MOS for demo videos
-        print(f"Using {len(files)} demo videos for testing.")
-    else:
-        files = [f + '.mp4' for f in df_test['flickr_id'].tolist()]
-        mos = df_test['mos'].tolist()
-        print(f"تعداد {len(files)} فایل ویدئویی برای ارزیابی نهایی انتخاب شد.")
+    # Use real videos from dataset instead of demo videos
+    files = [f + '.mp4' for f in df_test['flickr_id'].tolist()]
+    mos = df_test['mos'].tolist()
+    
+    # Filter out videos that don't exist
+    existing_files = []
+    existing_mos = []
+    for i, video_file in enumerate(files):
+        video_path = os.path.join(args.videos_dir, video_file)
+        if os.path.exists(video_path):
+            existing_files.append(video_file)
+            existing_mos.append(mos[i])
+    
+    files = existing_files
+    mos = existing_mos
+    
+    print(f"Found {len(files)} existing videos for evaluation.")
+    print(f"MOS range: {min(mos):.2f} - {max(mos):.2f}")
 
     print("\n--- مرحله ۴: شروع پیش‌بینی ---")
     pre_smos, pre_tmos, pre_amos, pre_audio = (np.zeros(len(mos)) for _ in range(4))
@@ -169,6 +177,9 @@ if __name__ == '__main__':
                 
                 video_results = [r.mean().item() for r in evaluator(views)]
                 pre_smos[i], pre_tmos[i], pre_amos[i] = video_results[0], video_results[1], video_results[2]
+                
+                # Debug: Print individual scores
+                print(f"Video {i+1}: Semantic={video_results[0]:.4f}, Technical={video_results[1]:.4f}, Aesthetic={video_results[2]:.4f}")
                 
                 # Audio processing (if available)
                 if audio_head_model and audio_features_dict:
