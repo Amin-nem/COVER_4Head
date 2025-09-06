@@ -85,7 +85,7 @@ if __name__ == '__main__':
     
     # Load pretrained weights
     if os.path.exists(opt["test_load_path"]):
-        state_dict = torch.load(opt["test_load_path"], map_location=args.device)
+        state_dict = torch.load(opt["test_load_path"], map_location=args.device, weights_only=False)
         evaluator.load_state_dict(state_dict['state_dict'], strict=False)
         print("Model weights loaded successfully.")
     else:
