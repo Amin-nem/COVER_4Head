@@ -8,21 +8,30 @@ mkdir -p pretrained_weights
 mkdir -p data_splits
 mkdir -p results
 
-# Download pretrained model (using a more reliable source)
+# Download pretrained model using the working raw URL
 cd pretrained_weights
-if [ ! -f "COVER.pth" ]; then
+if [ ! -f "COVER.pth" ] || [ ! -s "COVER.pth" ]; then
     echo "Downloading COVER pretrained model..."
-    # Try multiple sources for the model
-    wget -O COVER.pth "https://huggingface.co/vztu/COVER/resolve/main/COVER.pth" || \
-    wget -O COVER.pth "https://github.com/vztu/COVER/releases/download/v1.0/COVER.pth" || \
-    echo "Warning: Could not download pretrained model. Please download manually."
+    rm -f COVER.pth  # Remove corrupted file if exists
+    
+    # Use the working raw GitHub URL
+    wget -O COVER.pth "https://github.com/vztu/COVER/raw/release/Model/COVER.pth"
+    
+    # Check if download was successful
+    if [ -f "COVER.pth" ] && [ -s "COVER.pth" ]; then
+        echo "Model downloaded successfully. Size: $(du -h COVER.pth | cut -f1)"
+    else
+        echo "ERROR: Failed to download pretrained model!"
+        exit 1
+    fi
+else
+    echo "Model already exists. Size: $(du -h COVER.pth | cut -f1)"
 fi
 cd ..
 
 # Create test video IDs file if it doesn't exist
 if [ ! -f "data_splits/test_video_ids.txt" ]; then
     echo "Creating test video IDs file..."
-    # Extract unique flickr_ids from scores_duplicated.csv for testing
     python -c "
 import pandas as pd
 import numpy as np
