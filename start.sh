@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Install dependencies
-pip install -r requirements.txt
+pip install -r requirements.txt -q
 
 # Create necessary directories
 mkdir -p pretrained_weights
